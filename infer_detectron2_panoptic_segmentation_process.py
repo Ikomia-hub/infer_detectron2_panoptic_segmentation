@@ -41,7 +41,6 @@ class InferDetectron2PanopticSegmentationParam(core.CWorkflowTaskParam):
         self.cuda = True if torch.cuda.is_available() else False
         self.update = False
 
-
     def setParamMap(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
@@ -73,6 +72,7 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
         self.setOutputDataType(core.IODataType.IMAGE_LABEL, 0)
         self.addOutput(dataprocess.CImageIO())
         self.addOutput(dataprocess.CNumericIO())
+        self.addOutput(dataprocess.CGraphicsOutput())
 
         # Create parameters class
         if param is None:
@@ -90,33 +90,40 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
         # Call beginTaskRun for initialization
         self.beginTaskRun()
 
-        self.forwardInputImage(0,1)
+        self.forwardInputImage(0, 1)
 
         # Get parameters :
         param = self.getParam()
         if self.predictor is None or param.update:
+            np.random.seed(10)
             self.cfg = get_cfg()
             self.cfg.merge_from_file(model_zoo.get_config_file(param.model_name + '.yaml'))
             self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = param.conf_thres
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(param.model_name + '.yaml')
             self.class_names = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("thing_classes")
             self.colors = np.array(np.random.randint(0, 255, (len(self.class_names), 3)))
+            # conversion numpy integer to python integer
             self.colors = [[int(c[0]), int(c[1]), int(c[2])] for c in self.colors]
+            self.setOutputColorMap(1, 0, self.colors)
+
             self.cfg.MODEL.DEVICE = 'cuda' if param.cuda else 'cpu'
             self.predictor = DefaultPredictor(self.cfg)
             legend = self.getOutput(2)
-            legend.addValueList(list(range(1,len(self.class_names)+1)), "Class value", self.class_names)
+            legend.addValueList(list(range(len(self.class_names))), "Class value", self.class_names)
             param.update = False
             print("Inference will run on " + ('cuda' if param.cuda else 'cpu'))
 
         # Get input :
         input = self.getInput(0)
 
-
+        # Get output :
+        graphics_output = self.getOutput(3)
+        graphics_output.setImageIndex(1)
+        graphics_output.setNewLayer("PanopticSegmentation")
         if input.isDataAvailable():
             img = input.getImage()
             output_mask = self.getOutput(0)
-            out = self.infer(img)
+            out = self.infer(img, graphics_output)
             output_mask.setImage(out)
 
         # Step progress bar:
@@ -125,21 +132,24 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
         # Call endTaskRun to finalize process
         self.endTaskRun()
 
-    def infer(self, img):
+    def infer(self, img, graphics_output):
         outputs = self.predictor(img)
-        h,w,c = np.shape(img)
-        panoptic_seg = torch.full((h, w), fill_value=-1)
-
-        if "instances" in outputs.keys():
-            instances = outputs["instances"].to("cpu")
-            scores = instances.scores
-            classes = instances.pred_classes
-            masks = instances.pred_masks
-            for score, cls, mask in zip(scores, classes, masks):
-                if score>= self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST:
-                    panoptic_seg[mask] = cls+1
+        h, w, c = np.shape(img)
+        panoptic_seg = torch.full((h, w), fill_value=0)
+        if "panoptic_seg" in outputs.keys():
+            masks, infos = outputs["panoptic_seg"]
+            # reverse indexing to put stronger confidences foreground
+            for info in infos[::-1]:
+                px_value = info["id"]
+                cat_value = info["category_id"]
+                bool_mask = masks == px_value
+                y, x = np.median(bool_mask.cpu().numpy().nonzero(), axis=1)
+                properties_text = core.GraphicsTextProperty()
+                properties_text.color = self.colors[cat_value]
+                properties_text.font_size = 7
+                graphics_output.addText(self.class_names[cat_value], x, y, properties_text)
+                panoptic_seg[bool_mask] = cat_value
         return panoptic_seg.cpu().numpy()
-
 
 
 # --------------------
