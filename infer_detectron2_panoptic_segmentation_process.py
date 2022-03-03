@@ -100,16 +100,18 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
             self.cfg.merge_from_file(model_zoo.get_config_file(param.model_name + '.yaml'))
             self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = param.conf_thres
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(param.model_name + '.yaml')
-            self.class_names = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("thing_classes")
+            self.stuff_classes = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("stuff_classes")
+            self.thing_classes = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("thing_classes")
+            self.class_names = self.thing_classes + self.stuff_classes
             self.colors = np.array(np.random.randint(0, 255, (len(self.class_names), 3)))
             # conversion numpy integer to python integer
-            self.colors = [[int(c[0]), int(c[1]), int(c[2])] for c in self.colors]
+            self.colors = [[0,0,0]]+[[int(c[0]), int(c[1]), int(c[2])] for c in self.colors]
             self.setOutputColorMap(1, 0, self.colors)
 
             self.cfg.MODEL.DEVICE = 'cuda' if param.cuda else 'cpu'
             self.predictor = DefaultPredictor(self.cfg)
             legend = self.getOutput(2)
-            legend.addValueList(list(range(len(self.class_names))), "Class value", self.class_names)
+            legend.addValueList(list(range(1,1+len(self.class_names))), "Class value", self.class_names)
             param.update = False
             print("Inference will run on " + ('cuda' if param.cuda else 'cpu'))
 
@@ -139,16 +141,17 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
         if "panoptic_seg" in outputs.keys():
             masks, infos = outputs["panoptic_seg"]
             # reverse indexing to put stronger confidences foreground
-            for info in infos[::-1]:
+            for info in infos:
+                offset = len(self.thing_classes) if not info["isthing"] else 0
                 px_value = info["id"]
                 cat_value = info["category_id"]
                 bool_mask = masks == px_value
                 y, x = np.median(bool_mask.cpu().numpy().nonzero(), axis=1)
                 properties_text = core.GraphicsTextProperty()
-                properties_text.color = self.colors[cat_value]
+                properties_text.color = self.colors[cat_value+offset]
                 properties_text.font_size = 7
-                graphics_output.addText(self.class_names[cat_value], x, y, properties_text)
-                panoptic_seg[bool_mask] = cat_value
+                graphics_output.addText(self.class_names[offset + cat_value], x, y, properties_text)
+                panoptic_seg[bool_mask] = cat_value+1+offset
         return panoptic_seg.cpu().numpy()
 
 
