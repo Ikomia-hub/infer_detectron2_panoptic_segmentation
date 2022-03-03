@@ -1,1 +1,1 @@
-git+https://github.com/Ikomia-dev/detectron2.git@v0.3-win10
+git+https://github.com/Ikomia-dev/detectron2.git@v0.6-win10
