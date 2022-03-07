@@ -18,7 +18,8 @@
 
 from ikomia import core, dataprocess
 import copy
-# Your imports below
+import os
+import detectron2
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
@@ -97,7 +98,9 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
         if self.predictor is None or param.update:
             np.random.seed(10)
             self.cfg = get_cfg()
-            self.cfg.merge_from_file(model_zoo.get_config_file(param.model_name + '.yaml'))
+            config_path = os.path.join(os.path.dirname(detectron2.__file__), "model_zoo", "configs",
+                                       param.model_name + '.yaml')
+            self.cfg.merge_from_file(config_path)
             self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = param.conf_thres
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(param.model_name + '.yaml')
             self.stuff_classes = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("stuff_classes")
