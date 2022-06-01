@@ -26,6 +26,7 @@ from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog
 import numpy as np
 import torch
+from distutils.util import strtobool
 
 
 # --------------------
@@ -48,6 +49,7 @@ class InferDetectron2PanopticSegmentationParam(core.CWorkflowTaskParam):
         self.model_name = param_map["model_name"]
         self.conf_thres = float(param_map["conf_thres"])
         self.cuda = eval(param_map["cuda"])
+        self.update = strtobool(param_map["update"])
 
     def getParamMap(self):
         # Send parameters values to Ikomia application
@@ -56,6 +58,7 @@ class InferDetectron2PanopticSegmentationParam(core.CWorkflowTaskParam):
         param_map["model_name"] = self.model_name
         param_map["conf_thres"] = str(self.conf_thres)
         param_map["cuda"] = str(self.cuda)
+        param_map["update"] = str(self.update)
         return param_map
 
 
