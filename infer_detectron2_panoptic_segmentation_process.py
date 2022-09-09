@@ -142,6 +142,7 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
             masks, infos = outputs["panoptic_seg"]
 
             # reverse indexing to put stronger confidences foreground
+            index = 0
             for info in infos:
                 offset = len(self.thing_classes) if not info["isthing"] else 0
                 px_value = info["id"]
@@ -149,9 +150,10 @@ class InferDetectron2PanopticSegmentation(dataprocess.C2dImageTask):
                 bool_mask = (masks == px_value).cpu().numpy()
                 y, x = np.median(bool_mask.nonzero(), axis=1)
                 obj_type = 0 if info["isthing"] else 1
-                instance_output.addInstance(obj_type, cat_value, self.class_names[cat_value], 1.0,
+                instance_output.addInstance(index, obj_type, cat_value, self.class_names[cat_value], 1.0,
                                             float(x), float(y), 0.0, 0.0,
                                             bool_mask.astype("uint8"), self.colors[cat_value+1])
+                index += 1
 
 
 # --------------------
