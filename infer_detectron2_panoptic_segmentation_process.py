@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from infer_detectron2_panoptic_segmentation import update_path
-from ikomia import core, dataprocess
+from ikomia import utils, core, dataprocess
 import copy
 import os
 import detectron2
@@ -26,7 +26,6 @@ from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog
 import numpy as np
 import torch
-from distutils.util import strtobool
 
 
 # --------------------
@@ -49,7 +48,7 @@ class InferDetectron2PanopticSegmentationParam(core.CWorkflowTaskParam):
         self.model_name = param_map["model_name"]
         self.conf_thres = float(param_map["conf_thres"])
         self.cuda = eval(param_map["cuda"])
-        self.update = strtobool(param_map["update"])
+        self.update = utils.strtobool(param_map["update"])
 
     def getParamMap(self):
         # Send parameters values to Ikomia application
