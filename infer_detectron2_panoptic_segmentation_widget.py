@@ -68,9 +68,9 @@ class InferDetectron2PanopticSegmentationWidget(core.CWorkflowTaskWidget):
         layout_ptr = qtconversion.PyQtToQt(self.gridLayout)
 
         # Set widget layout
-        self.setLayout(layout_ptr)
+        self.set_layout(layout_ptr)
 
-    def onApply(self):
+    def on_apply(self):
         # Apply button clicked slot
 
         # Get parameters from widget
@@ -80,7 +80,7 @@ class InferDetectron2PanopticSegmentationWidget(core.CWorkflowTaskWidget):
         self.parameters.cuda = self.check_cuda.isChecked()
 
         # Send signal to launch the process
-        self.emitApply(self.parameters)
+        self.emit_apply(self.parameters)
 
 # --------------------
 # - Factory class to build process widget object
