@@ -144,9 +144,8 @@ class InferDetectron2PanopticSegmentation(dataprocess.CInstanceSegmentationTask)
                 bool_mask = (masks == px_value).cpu().numpy()
                 y, x = np.median(bool_mask.nonzero(), axis=1)
                 obj_type = 0 if info["isthing"] else 1
-                self.add_instance(index, obj_type, cat_value, 1.0,
-                                            float(x), float(y), 0.0, 0.0,
-                                            bool_mask.astype("uint8"))
+                self.add_object(index, obj_type, cat_value, 1.0, float(x), float(y), 0.0, 0.0,
+                                bool_mask.astype("uint8"))
                 index += 1
 
 
