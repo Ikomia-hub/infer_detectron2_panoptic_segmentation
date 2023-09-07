@@ -21,8 +21,7 @@
 
 Infer Detectron2 panoptic segmentation models
 
-[Insert illustrative image here. Image must be accessible publicly, in algorithm Github repository for example.
-<img src="images/illustration.png"  alt="Illustrative image" width="30%" height="30%">]
+![LR port segmentation ](https://raw.githubusercontent.com/Ikomia-hub/infer_detectron2_panoptic_segmentation/main/icons/output.jpg)
 
 ## :rocket: Use with Ikomia API
 
@@ -36,10 +35,7 @@ pip install ikomia
 
 #### 2. Create your workflow
 
-[Change the sample image URL to fit algorithm purpose]
-
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
 
 # Init your workflow
@@ -49,7 +45,10 @@ wf = Workflow()
 algo = wf.add_task(name="infer_detectron2_panoptic_segmentation", auto_connect=True)
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_LR.jpg")
+
+# Inpect your result
+display(algo.get_image_with_mask_and_graphics())
 ```
 
 ## :sunny: Use with Ikomia Studio
@@ -62,12 +61,10 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 
 ## :pencil: Set algorithm parameters
 
-[Explain each algorithm parameters]
-
-[Change the sample image URL to fit algorithm purpose]
+- **conf_thres** (float) - default '0.5': Box threshold for the prediction [0,1]
+- **cuda** (bool): If True, CUDA-based inference (GPU). If False, run on CPU
 
 ```python
-import ikomia
 from ikomia.dataprocess.workflow import Workflow
 
 # Init your workflow
@@ -77,14 +74,15 @@ wf = Workflow()
 algo = wf.add_task(name="infer_detectron2_panoptic_segmentation", auto_connect=True)
 
 algo.set_parameters({
-    "param1": "value1",
-    "param2": "value2",
-    ...
+    "conf_thres": "0.6",
+    "cuda": "True"
 })
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_LR.jpg")
 
+# Inpect your result
+display(algo.get_image_with_mask_and_graphics())
 ```
 
 ## :mag: Explore algorithm outputs
@@ -102,7 +100,7 @@ wf = Workflow()
 algo = wf.add_task(name="infer_detectron2_panoptic_segmentation", auto_connect=True)
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_LR.jpg")
 
 # Iterate over outputs
 for output in algo.get_outputs()
@@ -112,6 +110,4 @@ for output in algo.get_outputs()
     output.to_json()
 ```
 
-## :fast_forward: Advanced usage 
 
-[optional]
