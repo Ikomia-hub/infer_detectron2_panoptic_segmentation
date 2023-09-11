@@ -21,7 +21,7 @@
 
 Infer Detectron2 panoptic segmentation models
 
-![LR port segmentation ](https://raw.githubusercontent.com/Ikomia-hub/infer_detectron2_panoptic_segmentation/main/icons/output.jpg)
+![LR port segmentation](https://raw.githubusercontent.com/Ikomia-hub/infer_detectron2_panoptic_segmentation/main/icons/output.jpg)
 
 ## :rocket: Use with Ikomia API
 
@@ -103,7 +103,7 @@ algo = wf.add_task(name="infer_detectron2_panoptic_segmentation", auto_connect=T
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-dev/notebooks/main/examples/img/img_LR.jpg")
 
 # Iterate over outputs
-for output in algo.get_outputs()
+for output in algo.get_outputs():
     # Print information
     print(output)
     # Export it to JSON
