@@ -103,9 +103,9 @@ class InferDetectron2PanopticSegmentation(dataprocess.CInstanceSegmentationTask)
         if self.predictor is None or param.update:
             np.random.seed(10)
             self.cfg = get_cfg()
-            dataset_name, config_name = param.model_name.replace(os.path.sep, '/').split('/')
-            config_path = os.path.join(os.path.dirname(detectron2.__file__), "model_zoo", "configs",
-                                    dataset_name, config_name + '.yaml')
+            dataset_name, config_name = param.model_name.replace(os.path.sep, '/').split('/') 
+            config_path = os.path.join(os.path.dirname(detectron2.__file__), 
+                                       "model_zoo", "configs", dataset_name, config_name + '.yaml')
             self.cfg.merge_from_file(config_path)
             self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = param.conf_thres
             self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url((param.model_name + '.yaml').replace('\\', '/'))
