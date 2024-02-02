@@ -168,7 +168,7 @@ class InferDetectron2PanopticSegmentationFactory(dataprocess.CTaskFactory):
         self.info.description = "Infer Detectron2 panoptic segmentation models"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
-        self.info.version = "1.2.1"
+        self.info.version = "1.2.2"
         self.info.icon_path = "icons/detectron2.png"
         self.info.authors = "Yuxin Wu, Alexander Kirillov, Francisco Massa, Wan-Yen Lo, Ross Girshick"
         self.info.article = "Detectron2"
