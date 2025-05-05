@@ -98,25 +98,31 @@ class InferDetectron2PanopticSegmentation(dataprocess.CInstanceSegmentationTask)
         param = self.get_param_object()
 
         # Set cache dir in the algorithm folder to simplify deployment
-        os.environ["FVCORE_CACHE"] = os.path.join(os.path.dirname(__file__), "models")
+        os.environ["FVCORE_CACHE"] = os.path.join(
+            os.path.dirname(__file__), "models")
 
         if self.predictor is None or param.update:
             np.random.seed(10)
             self.cfg = get_cfg()
-            dataset_name, config_name = param.model_name.replace(os.path.sep, '/').split('/') 
-            config_path = os.path.join(os.path.dirname(detectron2.__file__), 
+            dataset_name, config_name = param.model_name.replace(
+                os.path.sep, '/').split('/')
+            config_path = os.path.join(os.path.dirname(detectron2.__file__),
                                        "model_zoo", "configs", dataset_name, config_name + '.yaml')
             self.cfg.merge_from_file(config_path)
             self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = param.conf_thres
-            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url((param.model_name + '.yaml').replace('\\', '/'))
-            self.stuff_classes = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("stuff_classes")
-            self.thing_classes = MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]).get("thing_classes")
+            self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
+                (param.model_name + '.yaml').replace('\\', '/'))
+            self.stuff_classes = MetadataCatalog.get(
+                self.cfg.DATASETS.TRAIN[0]).get("stuff_classes")
+            self.thing_classes = MetadataCatalog.get(
+                self.cfg.DATASETS.TRAIN[0]).get("thing_classes")
             self.class_names = self.thing_classes + self.stuff_classes
             self.set_names(self.class_names)
             self.cfg.MODEL.DEVICE = 'cuda' if param.cuda and torch.cuda.is_available() else 'cpu'
             self.predictor = DefaultPredictor(self.cfg)
             param.update = False
-            print("Inference will run on " + ('cuda' if param.cuda and torch.cuda.is_available() else 'cpu'))
+            print("Inference will run on " +
+                  ('cuda' if param.cuda and torch.cuda.is_available() else 'cpu'))
 
         # Get input :
         img_input = self.get_input(0)
@@ -168,7 +174,7 @@ class InferDetectron2PanopticSegmentationFactory(dataprocess.CTaskFactory):
         self.info.description = "Infer Detectron2 panoptic segmentation models"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Segmentation"
-        self.info.version = "1.2.2"
+        self.info.version = "1.2.3"
         self.info.icon_path = "icons/detectron2.png"
         self.info.authors = "Yuxin Wu, Alexander Kirillov, Francisco Massa, Wan-Yen Lo, Ross Girshick"
         self.info.article = "Detectron2"
@@ -179,8 +185,11 @@ class InferDetectron2PanopticSegmentationFactory(dataprocess.CTaskFactory):
         self.info.documentation_link = "https://detectron2.readthedocs.io/en/latest/"
         # Code source repository
         self.info.repository = "https://github.com/facebookresearch/detectron2"
+        # Python compatibility
+        self.info.min_python_version = "3.8.0"
+        self.info.min_ikomia_version = "0.13.0"
         # Keywords used for search
-        self.info.keywords = "infer, detectron2, panoptic, semantic, segmentation"
+        self.info.keywords = "detectron2, panoptic, semantic, segmentation"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "PANOPTIC_SEGMENTATION"
 
